@@ -1,5 +1,5 @@
 import random
-#import AI_MinimaxUtils
+import AI_MinimaxUtils
 
 from model import *
 
@@ -15,6 +15,7 @@ from model import *
 #         res.append(Cell(row=cell.row, col=cell.col - 1))
 
 class AI:
+
     def __init__(self):
         self.rows = 0
         self.cols = 0
@@ -48,7 +49,6 @@ class AI:
         friend_units = world.get_friend().units
         my_units = world.get_me().units
 
-        # play all of hand once your ap reaches maximum. if ap runs out, putUnit doesn't do anything
         for base_unit in myself.hand:
             world.put_unit(base_unit=base_unit, path=self.path_for_my_units)
 
@@ -61,19 +61,22 @@ class AI:
                     enemy_units.sort(key=lambda x: x.hp)
                     world.cast_area_spell(center=enemy_units[0].cell, spell=received_spell)
                 else:
-                    friend_units.sort(key=lambda x: x.hp)
-                    world.cast_area_spell(center=friend_units[0].cell, spell=received_spell)
-            elif received_spell.type == SpellType.TELE:
-                best_score = 0
-                best_unit = my_units[0]
-                for unit in my_units:
-                    #TODO: add distance from king to score
-                    score = unit.hp + unit.attack + unit.rage
-                    if score > best_score:
-                        best_score = score
-                        best_unit = unit
+                    best_score = -1000
+                    best_unit = friend_units[0]
+                    for unit in friend_units:
+                        score = unit.hp * -1
+                        if (unit.target_if_king and unit.hp < unit.base_unit.max_hp):
+                            score += 100
 
-                #TODO: find if you want cast the spell
+                        if score > best_score:
+                            best_score = score
+                            best_unit = unit
+
+                    world.cast_area_spell(center=best_unit.cell, spell=received_spell)
+            elif received_spell.type == SpellType.TELE:
+                last_unit = myself.units[-1]
+                world.cast_unit_spell(last_unit, self.path_for_my_units, self.path_for_my_units.cells[len(self.path_for_my_units) / 2 - 2],
+                                      received_spell)
             elif received_spell.type == SpellType.DUPLICATE:
                 #TODO: change the code if the ratio is based on BaseUnit properties
                 best_score = 0
@@ -96,11 +99,17 @@ class AI:
                         best_unit = unit
                     world.cast_area_spell(best_unit.cell, spell=received_spell)
 
-                    # this code tries to upgrade damage of first unit. in case there's no damage token, it tries to upgrade range
-        if len(myself.units) > 0:
-            unit = myself.units[0]
-            world.upgrade_unit_damage(unit=unit)
-            world.upgrade_unit_range(unit=unit)
+            #Damage Upgrade Code:
+            best_score = 0
+            best_unit = my_units[0]
+            for unit in my_units:
+                unit_score = 10 * unit.hp  + 100 * int(unit.target_if_king != None)
+                if (unit_score > best_score):
+                    best_score = unit_score
+                    best_unit = unit
+
+            world.upgrade_unit_damage(unit=best_unit)
+            world.upgrade_unit_range(unit=best_unit)
 
     # it is called after the game ended and it does not affect the game.
     # using this function you can access the result of the game.

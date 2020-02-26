@@ -77,7 +77,7 @@ class AI:
                     world.cast_area_spell(center=best_unit.cell, spell=received_spell)
             elif received_spell.type == SpellType.TELE:
                 last_unit = myself.units[-1]
-                world.cast_unit_spell(last_unit, self.path_for_my_units, self.path_for_my_units.cells[len(self.path_for_my_units) / 2 - 2],
+                world.cast_unit_spell(last_unit, self.path_for_my_units, self.path_for_my_units.cells[len(self.path_for_my_units.cells) / 2 - 2],
                                       received_spell)
             elif received_spell.type == SpellType.DUPLICATE:
                 #TODO: change the code if the ratio is based on BaseUnit properties

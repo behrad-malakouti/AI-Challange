@@ -15,6 +15,7 @@ class Map:
         return self.cells[row][col]
 
     def clear_units(self):
+        self.units.clear()
         for row in self.cells:
             for cell in row:
                 cell.clear_units()
@@ -23,14 +24,16 @@ class Map:
         return None if not path_id in self.paths_dict else self.paths_dict[path_id]
 
     def add_unit_in_cell(self, row, col, unit):
+        self.units.append(unit)
         self.cells[row][col].add_unit(unit)
 
 
 class Player:
+    _spells_dict = {}
+
     def __init__(self, player_id, deck, hand, ap, king, paths_from_player, path_to_friend,
                  units, cast_area_spell, cast_unit_spell, duplicate_units, hasted_units, played_units,
                  died_units, spells, range_upgraded_unit=None, damage_upgraded_unit=None):
-        self._spells_dict = {}
         self.player_id = player_id
         self.deck = deck
         self.hand = hand
@@ -56,19 +59,15 @@ class Player:
         return self.king.hp
 
     def set_spells(self, spells):
+        self._spells_dict.clear()
         self.spells = spells
         for spell in spells:
-            if spell.type_id in self._spells_dict:
-                self._spells_dict[spell.type_id] += 1
-            else:
-                self._spells_dict[spell.type_id] = 1
+            self._spells_dict.update({spell.type_id: self._spells_dict.get(spell.type_id, 0) + 1})
 
     def get_spell_count(self, spell=None, spell_id=None):
         if spell is not None:
             spell_id = spell.type_id
-        if spell_id in self._spells_dict:
-            return self._spells_dict[spell_id]
-        return 0
+        return self._spells_dict.get(spell_id, 0)
 
     def get_spells(self):
         return self.spells
@@ -284,7 +283,7 @@ class CastAreaSpell(CastSpell):
                  remaining_turns):
         super().__init__(spell=spell, id=id, caster_id=caster_id,
                          cell=cell, affected_units=affected_units)
-        self.ramaining_turns = remaining_turns
+        self.remaining_turns = remaining_turns
 
 
 class ServerConstants:
@@ -312,7 +311,7 @@ class ServerConstants:
 class GameConstants:
     def __init__(self, max_ap, max_turns, turn_timeout, pick_timeout,
                  turns_to_upgrade, turns_to_spell, damage_upgrade_addition, range_upgrade_addition,
-                 deck_size, hand_size):
+                 deck_size, hand_size, ap_addition):
         self.max_ap = max_ap
         self.max_turns = max_turns
         self.turn_timeout = turn_timeout
@@ -323,6 +322,7 @@ class GameConstants:
         self.range_upgrade_addition = range_upgrade_addition
         self.deck_size = deck_size
         self.hand_size = hand_size
+        self.ap_addition = ap_addition
 
 
 class TurnUpdates:
@@ -342,3 +342,9 @@ class TurnUpdates:
             self.got_damage_upgrade = turn_updates.got_damage_upgrade
             self.available_damage_upgrade = turn_updates.available_damage_upgrades
             self.available_range_upgrade = turn_updates.available_range_upgrades
+
+
+class Logs:
+    @staticmethod
+    def show_log(message):
+        print("Client Log message: ", message)

@@ -1,0 +1,2 @@
+while running there is a bug: friend_units[0] is out_of_range!!!!!!!
+

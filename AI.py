@@ -3,6 +3,8 @@ import AI_MinimaxUtils
 
 from model import *
 
+#def number_of_enemies(cell)
+
 # def neighbor_cells(cell):
 #     res = []
 #     if (cell.col > 0):
@@ -96,6 +98,18 @@ class AI:
                         unit.target_if_king != None)
                     if (unit_score > best_score):
                         best_score = unit_score
+                        best_unit = unit
+                    world.cast_area_spell(best_unit.cell, spell=received_spell)
+            elif received_spell.target == SpellTarget.ENEMY:
+                #Cast spell poison or damage for the best_unit
+                #TODO: It will be better if we can count the number of enemies in 8 tiles form it for each unit
+                #Then we can add it to variable unit_score
+                best_score = 0
+                best_unit = my_units[0]
+                for unit in my_units:
+                    unit_score = unit.hp + unit.attack + unit.range * 100 * int(unit.target != None) + 1000 * int(unit.target_if_king != None)
+                    if(unit_score > best_score):
+                        best_score = unit.score
                         best_unit = unit
                     world.cast_area_spell(best_unit.cell, spell=received_spell)
 

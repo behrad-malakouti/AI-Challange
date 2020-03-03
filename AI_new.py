@@ -63,7 +63,18 @@ class AI:
                     enemy_units.sort(key=lambda x: x.hp)
                     world.cast_area_spell(center=enemy_units[0].cell, spell=received_spell)
                 else:
-                    #TODO: compare sum of hp's of yourself and friends unit and cast the spell on witch one that has less sum hp
+                    #TODO: compare sum of hp's of yourself and friends unit and cast the spell on witch one that has less sum hp -> Solved but should be checked
+                    best_score_my = -1000
+                    best_unit_my = my_units[0]
+                    for unit in my_units:
+                        score = unit.hp * -1
+                        if(unit.target_if_king and unit.hp < unit.base_unit.max_hp):
+                            score += 100
+                            
+                        if(score > best_score_my):
+                            best_score_my = score
+                            best_unit_my = unit
+
                     best_score = -1000
                     best_unit = friend_units[0]
                     for unit in friend_units:
@@ -74,8 +85,11 @@ class AI:
                         if score > best_score:
                             best_score = score
                             best_unit = unit
-
-                    world.cast_area_spell(center=best_unit.cell, spell=received_spell)
+                    
+                    if(best_score_my > best_score):
+                        world.cast_area_spell(center=best_unit_my.cell, spell=received_spell)
+                    else:
+                        world.cast_area_spell(center=best_unit.cell, spell=received_spell)
             elif received_spell.type == SpellType.TELE:
                 last_unit = myself.units[-1]
                 world.cast_unit_spell(last_unit, self.path_for_my_units, self.path_for_my_units.cells[len(self.path_for_my_units.cells) // 2 - 2],
